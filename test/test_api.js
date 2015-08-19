@@ -9,11 +9,10 @@ var correctConfig = {
   api_url: 'http://localhost:80/api/v3' 
 };
 
-var wrongKeyConfig = {
+var wrongCredentialsConfig = {
   api_key: 'zRtVsmeznn7ySatTrnra', 
   api_url: 'http://localhost:80/api/v3' 
 };
-
 
 var correctDeployKey = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDAMoSHhKfeE3/oXanAQEZO0Sq20SMjvjmJlTy+CaGz/1uk+glLXi9u2RKtfPRZDceAgyEtRUpqya9Uo1v9bjkIckGLhQwXdSo2G6O3QuzpE3gc6AXTDPQ0ZkkXbSdU9VGL1Zzr+maBnvfwK6IlsNz3fLa4lNV7vz1LaGCg9D1jP+nufZjuDiCAno7D607oG1iHQ3x/BqzphUATav3DFQFT2FBmmittQT0l0mMJ4XsQCQXkwNbDjkLYNon8FYPm9U3AOlzicOGteebt5mhsQtfl9+lL99B8+fk8b24pEEbOxZ4l0HcwMI1R5OLoTzPwSvVw+bp3YPhH2IzfFwK5NUk7 stridertester/privproject1-stridertester@gmail.com\n";
 
@@ -32,7 +31,7 @@ describe('gitlab api', function() {
       nock.cleanAll();
       nock.disableNetConnect();
       require('./mocks/gitlab_get.js')();
-      require('./mocks/gitlab_add_remove_keys.js')();
+      require('./mocks/gitlab_add_key.js')();
   });
 
   after('Tear down mock Gitlab server', function tearDownNock() {
@@ -67,7 +66,7 @@ describe('gitlab api', function() {
     })
 
     it('should return a 401 error if incorrect credentials are specified', function(done) {
-      api.get(wrongKeyConfig, 'projects', function(err, body, res) {
+      api.get(wrongCredentialsConfig, 'projects', function(err, body, res) {
         expect(err).to.be.ok();
         expect(err).to.be.an(Error);
         expect(err.status).to.eql('401');
@@ -152,7 +151,7 @@ describe('gitlab api', function() {
     });
 
     it('should give an error if incorrect credentials are passed to it', function(done) {
-       api.addDeployKey(wrongKeyConfig, 5, 'strider-stridertester/privproject1', correctDeployKey, function(err, secondParam) {
+       api.addDeployKey(wrongCredentialsConfig, 5, 'strider-stridertester/privproject1', correctDeployKey, function(err, secondParam) {
         //console.log("Err is: " + util.inspect(err, false, 10, true)); 
         expect(err).to.be.ok();
         done();
@@ -190,8 +189,88 @@ describe('gitlab api', function() {
   });
 
   //--------------------------------------------------------------------------------------
-  describe('removeDeployKey', function() {
+  describe('removeDeployKey - when key is registered with the server', function() {
+    before('Setup the mock gitlab server', function setupNock() {
+        nock.cleanAll();
+        nock.disableNetConnect();
+        require('./mocks/gitlab_delete_project.js')();
+    });
 
+    after('Tear down mock Gitlab server', function tearDownNock() {
+      nock.cleanAll();
+    });
+
+    it('should return an error if any of its expected arguments are absent');
+
+    it('should delete a key and invoke our callback with err as null and wasDeleted as true when given correct parameters', function(done) {
+       api.removeDeployKey(correctConfig, 5, 'strider-stridertester/privproject1', function(err, wasDeleted) {
+         //console.log("Err is: " + util.inspect(err, false, 10, true));
+         //console.log("wasDeleted is: " + wasDeleted);
+         expect(err).to.not.be.ok();
+         expect(wasDeleted).to.be.ok();
+         done();
+       });
+     });
+
+    it('should return an error if wrong credentials are given', function(done) {
+     api.removeDeployKey(wrongCredentialsConfig, 5, 'strider-stridertester/privproject1', function(err, wasDeleted) {
+        //console.log("Err is: " + util.inspect(err, false, 10, true));
+        expect(err).to.be.ok();
+        expect(err).to.be.an(Error);
+        done();
+      });
+    });
+
+    it('should return an error if the config passed in to it does not have a Gitlab API url', function(done) {
+      var config = { api_key: 'zRtVsmeznn7ySatTrnrp' };
+      api.removeDeployKey(config, 5, 'strider-stridertester/privproject1', function(err, wasDeleted) {
+        expect(err).to.be.ok();
+        expect(err).to.be.an(Error);
+        done();
+      });
+    })
+
+    it('should return an error if the specified gitlab server IP cannot be resolved from the name', function(done) {
+      var invalidServerNameConfig = {
+        api_key: 'zRtVsmeznn7ySatTrnrp',
+        api_url: 'http://asadfsfdf:80/api/v3'
+      };
+      api.removeDeployKey(invalidServerNameConfig, 5, 'strider-stridertester/privproject1', function(err, wasDeleted) {
+        expect(err).to.be.ok();
+        expect(err).to.be.an(Error);
+        done();
+      });
+    });
+
+    it('should give an error if invalid repo id is passed to it', function(done) {
+      api.removeDeployKey(correctConfig, "wrong repo id", 'strider-stridertester/privproject1', function(err, secondParam) {
+        //console.log("Err is: " + util.inspect(err, false, 10, true)); 
+        expect(err).to.be.ok();
+        done();
+      });
+    });
+  });
+
+  describe('removeDeployKey - when key is not registered in the gitlab server', function() {
+    before('Setup the mock gitlab server', function setupNock() {
+        nock.cleanAll();
+        nock.disableNetConnect();
+        require('./mocks/gitlab_delete_key_when_absent.js')();
+    });
+
+    after('Tear down mock Gitlab server', function tearDownNock() {
+      nock.cleanAll();
+    });
+
+    it('should callback with err as null and wasDeleted as false', function(done) {
+       api.removeDeployKey(correctConfig, 5, 'strider-stridertester/privproject1', function(err, wasDeleted) {
+         //console.log("Err is: " + util.inspect(err, false, 10, true));
+         //console.log("wasDeleted is: " + wasDeleted);
+         expect(err).to.not.be.ok();
+         expect(wasDeleted).to.not.be.ok();
+         done();
+       });
+     });
   });
 
   //--------------------------------------------------------------------------------------
