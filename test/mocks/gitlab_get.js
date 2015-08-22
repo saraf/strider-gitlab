@@ -1,17 +1,20 @@
+/*
+  This file sets up mock responses as received from gitlab for each request fired
+  during get operations.
+
+  nock will simulate a gitlab server running at
+  localhost:80, where Strider Tester, a user is
+  registered with the name "stridertester", and
+  has been registered with api token - zRtVsmeznn7ySatTrnrp 
+  stridertester is an "owner" of a group named "testunion"
+  and has admin access to three projects - 
+    testunion / unionproject1
+    Strider Tester / pubproject1
+    Strider Tester / privproject1
+*/
+
 var nock = require('nock');
 
-//nock will simulate a gitlab server running at
-//localhost:80, where Strider Tester, a user is
-//registered with the name "stridertester", and
-//has been registered with api token - zRtVsmeznn7ySatTrnrp 
-//stridertester is an "owner" of a group named "testunion"
-//and has admin access to three projects - 
-// testunion / unionproject1
-// Strider Tester / pubproject1
-// Strider Tester / privproject1
-
-//This file sets up mock responses as received from gitlab for each request fired
-//during get operations
 module.exports = function() {
   nock('http://localhost:80')
     .get('/api/v3/projects')
@@ -28,37 +31,37 @@ module.exports = function() {
     'x-request-id': '374db4c9-de67-4408-b9e8-49651bf8a7f3',
     'x-runtime': '0.616995',
     'content-encoding': 'gzip' });
-};
 
-//mocks a response when incorrect credentials are specified
-nock('http://localhost:80')
-  .get('/api/v3/projects')
-  .query({"private_token":"zRtVsmeznn7ySatTrnra","per_page":"100"})
-  .reply(401, {"message":"401 Unauthorized"}, { server: 'nginx',
-  date: 'Wed, 19 Aug 2015 01:09:38 GMT',
-  'content-type': 'application/json',
-  'content-length': '30',
-  connection: 'close',
-  status: '401 Unauthorized',
-  'cache-control': 'no-cache',
-  'x-request-id': '4eb8c9f8-3a0c-4b70-aa9a-cfd61ea15b87',
-  'x-runtime': '0.444739' });
+  //mocks a response when incorrect credentials are specified
+  nock('http://localhost:80')
+    .get('/api/v3/projects')
+    .query({"private_token":"zRtVsmeznn7ySatTrnra","per_page":"100"})
+    .reply(401, {"message":"401 Unauthorized"}, { server: 'nginx',
+    date: 'Wed, 19 Aug 2015 01:09:38 GMT',
+    'content-type': 'application/json',
+    'content-length': '30',
+    connection: 'close',
+    status: '401 Unauthorized',
+    'cache-control': 'no-cache',
+    'x-request-id': '4eb8c9f8-3a0c-4b70-aa9a-cfd61ea15b87',
+    'x-runtime': '0.444739' });
 
-//mocks a response when an incorrect path is specified
-nock('http://localhost:80')
-  .get('/api/v3/nonexistentpath')
-  .query({"private_token":"zRtVsmeznn7ySatTrnrp","per_page":"100"})
-  .reply(404, ["1f8b08000000000000039551b152c3300cddf315c24b61a9e9b5639a053816383a74615462a5f6c5b173b6c291bf4771e00358ec93a5f7f4de737df7fcf174fdbcbc80e5d13755fd77119aa602a8d9b1a7e66a0926bc112c71de25021fe3e0c20dfa98a08bb3371022434bf2300703f7a7c7d343ad37eccae25d18c026eacf4a674676ddbecb59c148c6e159e52e11050589bc14bc78ca968815f032d159317db32ef35a146a5bb455751bcd5234da43230ba571d8cae33ff5ee057adca0493608e3d4bce3409067f1cae21d8d499433b82c7653a28e01c5275be4d22fd958cc61c730c62f324239fd325d3c6126c10546c14982095e1dbf612bb4a30b2e734296205dbf36856f0d4bceb20e61940111b331d67a732d8acb7ffd000988a5bfc0010000"], { server: 'nginx',
-  date: 'Wed, 19 Aug 2015 01:21:43 GMT',
-  'content-type': 'text/html; charset=utf-8',
-  'transfer-encoding': 'chunked',
-  connection: 'close',
-  status: '404 Not Found',
-  'x-frame-options': 'DENY',
-  'x-xss-protection': '1; mode=block',
-  'x-content-type-options': 'nosniff',
-  'x-ua-compatible': 'IE=edge',
-  'cache-control': 'no-cache',
-  'x-request-id': '78eec92b-b96f-49bb-a46f-3b9ed7d8ff71',
-  'x-runtime': '0.077683',
+  //mocks a response when an incorrect path is specified
+  nock('http://localhost:80')
+    .get('/api/v3/nonexistentpath')
+    .query({"private_token":"zRtVsmeznn7ySatTrnrp","per_page":"100"})
+    .reply(404, ["1f8b08000000000000039551b152c3300cddf315c24b61a9e9b5639a053816383a74615462a5f6c5b173b6c291bf4771e00358ec93a5f7f4de737df7fcf174fdbcbc80e5d13755fd77119aa602a8d9b1a7e66a0926bc112c71de25021fe3e0c20dfa98a08bb3371022434bf2300703f7a7c7d343ad37eccae25d18c026eacf4a674676ddbecb59c148c6e159e52e11050589bc14bc78ca968815f032d159317db32ef35a146a5bb455751bcd5234da43230ba571d8cae33ff5ee057adca0493608e3d4bce3409067f1cae21d8d499433b82c7653a28e01c5275be4d22fd958cc61c730c62f324239fd325d3c6126c10546c14982095e1dbf612bb4a30b2e734296205dbf36856f0d4bceb20e61940111b331d67a732d8acb7ffd000988a5bfc0010000"], { server: 'nginx',
+    date: 'Wed, 19 Aug 2015 01:21:43 GMT',
+    'content-type': 'text/html; charset=utf-8',
+    'transfer-encoding': 'chunked',
+    connection: 'close',
+    status: '404 Not Found',
+    'x-frame-options': 'DENY',
+    'x-xss-protection': '1; mode=block',
+    'x-content-type-options': 'nosniff',
+    'x-ua-compatible': 'IE=edge',
+    'cache-control': 'no-cache',
+    'x-request-id': '78eec92b-b96f-49bb-a46f-3b9ed7d8ff71',
+    'x-runtime': '0.077683',
   'content-encoding': 'gzip' });
+};
